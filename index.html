@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="fr" style="scroll-behavior: smooth;">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Abbaye-aux-Hommes de Caen | Saint-Étienne</title>
+  
+  <!-- FAVICON IDENTIQUE AU LOGO DU SITE (Flèches normandes en or cistercien) -->
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2307090C'/%3E%3Cpath d='M23 10l-4 12v32h8V22z M41 10l-4 12v32h8V22z' fill='%23C5A059'/%3E%3Cpath d='M32 16l-6 12v26h12V28z' fill='%23E5C98B'/%3E%3Ccircle cx='32' cy='36' r='4' fill='%2307090C'/%3E%3C/svg%3E">
+
+  <!-- Polices Google : Cinzel et Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* RESET & PARAMÈTRES GLOBAUX */
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: #07090c;
+      color: #ffffff;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      overflow-x: hidden;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* BARRE DE NAVIGATION SUPÉRIEURE ÉPURÉE */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 68px;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2.5rem;
+      background: rgba(7, 9, 12, 0.85);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: #fff;
+    }
+
+    .brand-icon {
+      width: 28px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .brand-title {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .brand-sub {
+      display: block;
+      font-size: 0.62rem;
+      letter-spacing: 0.2em;
+      color: #c5a059;
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+
+    /* MENU DES LIENS (Bouton billetterie retiré) */
+    nav.nav-links {
+      display: flex;
+      align-items: center;
+      gap: 2.2rem;
+    }
+
+    nav.nav-links a {
+      color: #cbd5e1;
+      text-decoration: none;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 500;
+      transition: color 0.25s ease;
+    }
+
+    nav.nav-links a:hover {
+      color: #c5a059;
+    }
+
+    /* ZONE DE SCROLLYTELLING */
+    .scroll-track {
+      position: relative;
+      height: 290vh; /* Déroulé ample pour savourer chaque étape */
+    }
+
+    .viewport-sticky {
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* SCÈNE DE L'ABBAYE */
+    .stage-container {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      will-change: transform;
+      transform-origin: center 40%;
+    }
+
+    /* 1. COUCHE IMAGE COMPLÈTE (Arrière-plan ciel et parvis) */
+    .full-image-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 2;
+      opacity: 0;
+      will-change: opacity;
+    }
+
+    /* 2. COUCHE SUJET SEUL (Abbaye détourée - Masquée à l'arrivée) */
+    .subject-image-layer {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 3;
+      opacity: 0; /* Totalement masqué au départ sur fond noir */
+      filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 50px rgba(197, 160, 89, 0.15)) contrast(1.06) brightness(1.03);
+      -webkit-filter: drop-shadow(0 20px 45px rgba(0, 0, 0, 0.95)) drop-shadow(0 0 50px rgba(197, 160, 89, 0.15)) contrast(1.06) brightness(1.03);
+      image-rendering: -webkit-optimize-contrast;
+      will-change: opacity, transform;
+      transform: translateZ(0);
+    }
+
+    .full-image-layer img, .subject-image-layer img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center 22%; /* Cadrage panoramique aéré */
+    }
+
+    /* 3. TITRE D'ACCUEIL AVEC CHEVALIERS (Premier écran 100% noir) */
+    .hero-intro {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      text-align: center;
+      width: 90%;
+      max-width: 950px;
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+
+    /* MOTIF DES CHEVALIERS & SYMBOLES NORMANS EN OR */
+    .chivalry-crest {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      margin-bottom: 25px;
+    }
+
+    .crest-icon {
+      width: 44px;
+      height: 44px;
+      stroke: #c5a059;
+      fill: none;
+      filter: drop-shadow(0 0 12px rgba(197, 160, 89, 0.35));
+    }
+
+    .crest-divider {
+      width: 50px;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #c5a059, transparent);
+    }
+
+    /* SOUS-TITRE SANS AUCUN RECTANGLE OU SURBRILLANCE */
+    .hero-tag {
+      display: block;
+      font-size: 0.8rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: #c5a059;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .hero-intro h1 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(2.4rem, 6.2vw, 5.2rem);
+      font-weight: 900;
+      line-height: 1.05;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #ffffff;
+      text-shadow: 0 10px 40px rgba(0, 0, 0, 0.95);
+    }
+
+    .hero-scroll-cue {
+      margin-top: 2.2rem;
+      font-size: 0.76rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: #94a3b8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .mouse-icon {
+      width: 20px;
+      height: 32px;
+      border: 2px solid rgba(255, 255, 255, 0.35);
+      border-radius: 14px;
+      display: flex;
+      justify-content: center;
+      padding-top: 5px;
+    }
+
+    .mouse-dot {
+      width: 3px;
+      height: 7px;
+      background: #c5a059;
+      border-radius: 2px;
+      animation: wheel 1.6s infinite;
+    }
+
+    @keyframes wheel {
+      0% { transform: translateY(0); opacity: 1; }
+      100% { transform: translateY(10px); opacity: 0; }
+    }
+
+    /* 4. ENCADRÉS NOIRS D'INFORMATIONS (Présence prolongée et nette) */
+    .reveal-cards-layer {
+      position: absolute;
+      bottom: 9%;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      width: 90%;
+      max-width: 950px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      will-change: opacity, transform;
+    }
+
+    .reveal-card {
+      background: rgba(8, 10, 14, 0.94);
+      border: 1px solid rgba(197, 160, 89, 0.45);
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      padding: 24px;
+      border-radius: 16px;
+      box-shadow: 0 25px 50px rgba(0, 0, 0, 0.9);
+    }
+
+    .reveal-card .year {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: #e5c98b;
+      display: block;
+    }
+
+    .reveal-card .title {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #ffffff;
+      margin: 4px 0 8px 0;
+      font-weight: 700;
+    }
+
+    .reveal-card p {
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      line-height: 1.5;
+      font-weight: 400;
+    }
+
+    /* STRUCTURE DU CONTENU DE VISITE */
+    .main-wrapper {
+      position: relative;
+      z-index: 20;
+      background: #fbf9f5;
+      color: #0f172a;
+      border-radius: 36px 36px 0 0;
+      padding: 90px 24px 80px 24px;
+      margin-top: -30px;
+      box-shadow: 0 -30px 60px rgba(0, 0, 0, 0.85);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* BANDEAU HORAIRES & VISITES */
+    .practical-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 24px;
+      margin-top: -150px;
+      position: relative;
+      z-index: 30;
+      margin-bottom: 90px;
+    }
+
+    .practical-card {
+      background: #ffffff;
+      padding: 32px 28px;
+      border-radius: 20px;
+      box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
+      border: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .practical-card h3 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      margin: 6px 0 8px 0;
+      color: #0f172a;
+    }
+
+    .practical-card p {
+      font-size: 0.88rem;
+      color: #475569;
+      line-height: 1.6;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #16a34a;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background: #16a34a;
+      border-radius: 50%;
+    }
+
+    /* SECTION HISTOIRE */
+    .section-header {
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto 60px auto;
+    }
+
+    .section-tag {
+      font-size: 0.75rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: #c5a059;
+      font-weight: 700;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .section-title {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      color: #080a0e;
+      line-height: 1.2;
+    }
+
+    .history-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(310px, 1fr));
+      gap: 30px;
+      margin-bottom: 100px;
+    }
+
+    .history-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px;
+      border: 1px solid rgba(0, 0, 0, 0.06);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    }
+
+    .history-card h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.15rem;
+      color: #0f172a;
+      margin-bottom: 12px;
+    }
+
+    .history-card p {
+      font-size: 0.9rem;
+      color: #475569;
+      line-height: 1.7;
+    }
+
+    /* SECTION SAISON 2026 */
+    .cultural-section {
+      background: #f1ede4;
+      border-radius: 28px;
+      padding: 60px 40px;
+      margin-bottom: 100px;
+    }
+
+    .events-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(290px, 1fr));
+      gap: 24px;
+      margin-top: 40px;
+    }
+
+    .event-card {
+      background: #ffffff;
+      border-radius: 18px;
+      padding: 28px;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+      transition: transform 0.25s ease;
+    }
+
+    .event-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .event-date {
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-weight: 700;
+      color: #c5a059;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    .event-card h4 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.2rem;
+      color: #0f172a;
+      margin-bottom: 10px;
+    }
+
+    .event-card p {
+      font-size: 0.85rem;
+      color: #64748b;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .event-badge {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #0f172a;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding-top: 14px;
+      border-top: 1px solid #f1f5f9;
+    }
+
+    /* SECTION ESPACES RÉCEPTIFS */
+    .receptive-banner {
+      background: #080a0e;
+      color: #ffffff;
+      border-radius: 28px;
+      padding: 60px 48px;
+      margin-bottom: 40px;
+    }
+
+    .receptive-content {
+      max-width: 650px;
+    }
+
+    .receptive-content h3 {
+      font-family: 'Cinzel', serif;
+      font-size: clamp(1.8rem, 3.2vw, 2.5rem);
+      margin: 10px 0 18px 0;
+      line-height: 1.2;
+    }
+
+    .receptive-content p {
+      font-size: 0.92rem;
+      color: #cbd5e1;
+      line-height: 1.7;
+      margin-bottom: 28px;
+      font-weight: 300;
+    }
+
+    .btn-gold {
+      display: inline-block;
+      background: #c5a059;
+      color: #080a0e;
+      padding: 13px 28px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-gold:hover {
+      background: #e5c98b;
+      transform: scale(1.04);
+    }
+
+    /* GRAND PIED DE PAGE (4 Colonnes) */
+    footer {
+      background: #06080b;
+      color: #94a3b8;
+      padding: 70px 2.5rem 40px 2.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      font-size: 0.85rem;
+    }
+
+    .footer-grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 40px;
+      margin-bottom: 60px;
+    }
+
+    .footer-col h5 {
+      font-family: 'Cinzel', serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #ffffff;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 18px;
+    }
+
+    .footer-col p {
+      line-height: 1.6;
+      font-size: 0.82rem;
+      color: #94a3b8;
+    }
+
+    .footer-badge {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 4px 10px;
+      background: rgba(197, 160, 89, 0.12);
+      border: 1px solid rgba(197, 160, 89, 0.3);
+      border-radius: 6px;
+      color: #e5c98b;
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 600;
+    }
+
+    .footer-links {
+      list-style: none;
+    }
+
+    .footer-links li {
+      margin-bottom: 10px;
+    }
+
+    .footer-links a {
+      color: #94a3b8;
+      text-decoration: none;
+      font-size: 0.82rem;
+      transition: color 0.2s ease;
+    }
+
+    .footer-links a:hover {
+      color: #c5a059;
+    }
+
+    .newsletter-form {
+      display: flex;
+      margin-top: 14px;
+      gap: 6px;
+    }
+
+    .newsletter-input {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 6px;
+      padding: 9px 12px;
+      color: #fff;
+      font-size: 0.78rem;
+      flex-grow: 1;
+      outline: none;
+    }
+
+    .newsletter-input:focus {
+      border-color: #c5a059;
+    }
+
+    .newsletter-btn {
+      background: #c5a059;
+      border: none;
+      border-radius: 6px;
+      padding: 9px 14px;
+      color: #080a0e;
+      font-weight: 700;
+      font-size: 0.75rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .newsletter-btn:hover {
+      background: #e5c98b;
+    }
+
+    .footer-bottom {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding-top: 25px;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    @media (max-width: 850px) {
+      header { padding: 0 1.2rem; }
+      nav.nav-links { display: none; }
+      .practical-grid { margin-top: -80px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- EN-TÊTE FIXE (Sans bouton billetterie) -->
+  <header>
+    <a href="#" class="brand">
+      <svg class="brand-icon" viewBox="0 0 64 64" fill="none">
+        <path d="M23 10l-4 12v32h8V22z M41 10l-4 12v32h8V22z" fill="#C5A059"/>
+        <path d="M32 16l-6 12v26h12V28z" fill="#E5C98B"/>
+        <circle cx="32" cy="36" r="4" fill="#07090c"/>
+      </svg>
+      <div>
+        <span class="brand-title">Abbaye-aux-Hommes</span>
+        <span class="brand-sub">Caen · Guillaume le Conquérant</span>
+      </div>
+    </a>
+
+    <nav class="nav-links">
+      <a href="#visiter">Horaires & Visites</a>
+      <a href="#histoire">Histoire & Architecture</a>
+      <a href="#expositions">Saison 2026</a>
+      <a href="#privatisations">Espaces Réceptifs</a>
+    </nav>
+  </header>
+
+  <!-- PISTE DE DÉFILEMENT (Scrollytelling Apple) -->
+  <div id="scrollTrack" class="scroll-track">
+    <div class="viewport-sticky">
+
+      <!-- LE CONTENEUR DES DEUX IMAGES -->
+      <div id="stageContainer" class="stage-container">
+        
+        <!-- 1. ARRIÈRE-PLAN COMPLET (Ciel & Parvis - Apparaît en fondu) -->
+        <div id="fullImgLayer" class="full-image-layer">
+          <img src="abbaye-fond.jpg" alt="Abbaye-aux-Hommes de Caen vue panoramique">
+        </div>
+
+        <!-- 2. SUJET DÉTOURÉ (Arrive dès le premier coup de molette) -->
+        <div id="subjectImgLayer" class="subject-image-layer">
+          <img src="abbaye-sujet.png" alt="Sujet seul de l'Abbaye-aux-Hommes de Caen">
+        </div>
+
+      </div>
+
+      <!-- 3. ÉCRAN D'ACCUEIL : TITRE & SYMBOLES DE CHEVALIERS (Au départ sur fond noir) -->
+      <div id="heroIntro" class="hero-intro">
+        <div class="chivalry-crest">
+          <span class="crest-divider"></span>
+          
+          <!-- Dessin vectoriel : Épée et bouclier de chevalier normand -->
+          <svg class="crest-icon" viewBox="0 0 48 48" stroke-width="2">
+            <path d="M24 4v32M18 10h12M20 36l4 8 4-8"/>
+            <path d="M12 14c0 14 12 24 12 24s12-10 12-24V8l-12-4-12 4v6z" stroke-dasharray="1 3"/>
+          </svg>
+
+          <!-- Dessin vectoriel : Heaume de chevalier ducal -->
+          <svg class="crest-icon" viewBox="0 0 48 48" stroke-width="2">
+            <path d="M14 18c0-7 4.5-12 10-12s10 5 10 12v8c0 8-5 14-10 14s-10-6-10-14v-8z"/>
+            <path d="M17 22h14M24 22v12M20 28h8"/>
+            <path d="M24 6V2"/>
+          </svg>
+
+          <!-- Dessin vectoriel : Épées croisées -->
+          <svg class="crest-icon" viewBox="0 0 48 48" stroke-width="2">
+            <path d="M10 38l28-28M14 38l-4 4 4-4M34 10l4-4-4 4M28 8l12 12M38 10l-6 6"/>
+          </svg>
+
+          <span class="crest-divider"></span>
+        </div>
+
+        <!-- Sous-titre propre sans aucun rectangle -->
+        <span class="hero-tag">Monument Historique · Fondation Ducale 1063</span>
+        <h1>Abbaye Royale<br>Saint-Étienne</h1>
+
+        <div class="hero-scroll-cue">
+          <span class="mouse-icon"><span class="mouse-dot"></span></span>
+          <span>Faites glisser pour révéler le domaine</span>
+        </div>
+      </div>
+
+      <!-- 4. ENCADRÉS NOIRS D'HISTOIRE (Présence prolongée et bien contrastée) -->
+      <div id="revealCards" class="reveal-cards-layer">
+        <div class="reveal-card">
+          <span class="year">1063</span>
+          <div class="title">Guillaume le Conquérant</div>
+          <p>Tombeau ducal et chef-d'œuvre fondateur de l'architecture médiévale normande.</p>
+        </div>
+        <div class="reveal-card">
+          <span class="year">9 Siècles</span>
+          <div class="title">Roman & Gothique</div>
+          <p>Harmonie unique entre chevet roman primitif et élévation gothique rayonnante.</p>
+        </div>
+        <div class="reveal-card">
+          <span class="year">Ouvert</span>
+          <div class="title">Hôtel de Ville & Visites</div>
+          <p>Visite libre du cloître, de la salle des Gardes et des jardins à la française.</p>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- SECTION BLANCHE DU SITE -->
+  <main class="main-wrapper">
+    <div class="container">
+
+      <!-- BANDEAU HORAIRES & VISITES -->
+      <div class="practical-grid" id="visiter">
+        <div class="practical-card">
+          <span class="status-badge"><span class="status-dot"></span> Ouvert au public</span>
+          <h3>Horaires du Domaine</h3>
+          <p>Lundi au dimanche : 08h00 – 19h00.<br>Visite guidée des salles d'apparat quotidiennes à 11h et 15h.</p>
+        </div>
+
+        <div class="practical-card">
+          <h3>Accès & Visite</h3>
+          <p>Visite libre de l'église abbatiale entièrement gratuite.<br>Circuit historique guidé du cloître : 5 € (Gratuit -18 ans).</p>
+        </div>
+
+        <div class="practical-card">
+          <h3>Localisation</h3>
+          <p>Esplanade Jean-Marie Louvel, 14000 Caen.<br>Stationnement autocars et accès direct réseau tramway.</p>
+        </div>
+      </div>
+
+      <!-- SECTION HISTOIRE -->
+      <section id="histoire">
+        <div class="section-header">
+          <span class="section-tag">Un Trésor Architectural</span>
+          <h2 class="section-title">L'audace des bâtisseurs normands</h2>
+        </div>
+
+        <div class="history-grid">
+          <div class="history-card">
+            <h4>Le Pardon Pontifical</h4>
+            <p>
+              Fondée en 1063 par Guillaume le Conquérant pour expier son mariage avec sa cousine Mathilde de Flandre auprès du pape Léon IX, l'Abbaye-aux-Hommes abrite depuis 1087 le tombeau officiel du duc devenu roi d'Angleterre.
+            </p>
+          </div>
+
+          <div class="history-card">
+            <h4>La Révolution de la Pierre</h4>
+            <p>
+              C'est ici qu'ont été expérimentées, dès le début du XIIᵉ siècle, les premières voûtes d'ogives sexpartites de France. La célèbre pierre calcaire de Caen, lumineuse et blonde, donne à l'abbatiale son acoustique et son éclat uniques.
+            </p>
+          </div>
+
+          <div class="history-card">
+            <h4>Du Monastère à la Cité</h4>
+            <p>
+              Épargnée par les bombardements de la Libération en 1944 grâce au statut d'îlot sanitaire protégé par la Croix-Rouge, l'abbaye est devenue depuis 1965 le siège majestueux de l'Hôtel de Ville de Caen.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION PROGRAMMATION 2026 -->
+      <section id="expositions" class="cultural-section">
+        <div class="section-header" style="margin-bottom: 30px;">
+          <span class="section-tag">Programmation Officielle</span>
+          <h2 class="section-title">Expositions & Saison Culturelle 2026</h2>
+        </div>
+
+        <div class="events-grid">
+          <div class="event-card">
+            <div>
+              <span class="event-date">Du 15 mai au 1er novembre 2026</span>
+              <h4>L'Or de la Pierre : Sculpture et Lumière</h4>
+              <p>Une confrontation inédite entre statuaire médiévale normande et œuvres de tailleurs de pierre contemporains dans le déambulatoire.</p>
+            </div>
+            <div class="event-badge">Compris dans le billet du circuit</div>
+          </div>
+
+          <div class="event-card">
+            <div>
+              <span class="event-date">Chaque jeudi de juillet & août à 20h30</span>
+              <h4>Les Nocturnes aux Chandelles</h4>
+              <p>Concerts acoustiques et récitals de grand orgue historique Cavaillé-Coll éclairés par des centaines de bougies dans la nef.</p>
+            </div>
+            <div class="event-badge">Entrée libre · Réservation conseillée</div>
+          </div>
+
+          <div class="event-card">
+            <div>
+              <span class="event-date">19 & 20 septembre 2026</span>
+              <h4>Journées Européennes du Patrimoine</h4>
+              <p>Ouverture exceptionnelle du scriptorium, de la bibliothèque d'archives et des charpentes médiévales avec nos maîtres artisans.</p>
+            </div>
+            <div class="event-badge">Entrée libre & gratuite</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECTION PRIVATISATIONS -->
+      <section id="privatisations" class="receptive-banner">
+        <div class="receptive-content">
+          <span style="font-size: 0.72rem; letter-spacing: 0.25em; text-transform: uppercase; color: #c5a059; font-weight: 700;">Privatisations & Événements</span>
+          <h3>Un cadre ducal prestigieux pour vos réceptions d'exception</h3>
+          <p>
+            La Salle des Gardes, le réfectoire voûté et les galeries du cloître classique s'ouvrent à vos colloques, assemblées générales, séminaires de direction et dîners de gala. Capacité d'accueil de 40 à 350 personnes avec prestation traiteur agréée.
+          </p>
+          <a href="mailto:receptions@caen.fr" class="btn-gold">Demander la brochure réceptive</a>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- GRAND PIED DE PAGE -->
+  <footer>
+    <div class="footer-grid">
+      <div class="footer-col">
+        <h5>Abbaye-aux-Hommes</h5>
+        <p>
+          Chef-d'œuvre roman et gothique fondé par Guillaume le Conquérant. Siège de l'Hôtel de Ville de Caen.
+        </p>
+        <span class="footer-badge">Classé Monument Historique (1840)</span>
+      </div>
+
+      <div class="footer-col">
+        <h5>Informations Visiteurs</h5>
+        <ul class="footer-links">
+          <li><a href="#visiter">Visite libre de l'abbatiale (Gratuit)</a></li>
+          <li><a href="#visiter">Accessibilité PMR & Ascenseurs</a></li>
+          <li><a href="#visiter">Chiens d'assistance admis</a></li>
+          <li><a href="#visiter">Boutique & Librairie du Cloître</a></li>
+          <li><a href="#visiter">Audioguides FR / EN / DE / IT</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h5>Contact & Visites</h5>
+        <p>
+          Esplanade Jean-Marie Louvel<br>
+          14027 Caen Cedex 9, France<br><br>
+          <strong>Tél accueil :</strong> +33 (0)2 31 30 41 00<br>
+          <strong>Contact :</strong> abbayeauxhommes@caen.fr
+        </p>
+      </div>
+
+      <div class="footer-col">
+        <h5>Suivre l'Abbaye</h5>
+        <p>Recevez par email la programmation des concerts, expositions temporaires et nocturnes.</p>
+        <form class="newsletter-form" onsubmit="event.preventDefault(); alert('Merci pour votre inscription à la lettre culturelle !');">
+          <input type="email" placeholder="Votre email..." required class="newsletter-input">
+          <button type="submit" class="newsletter-btn">OK</button>
+        </form>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© 2026 Ville de Caen · Abbaye-aux-Hommes. Tous droits réservés.</p>
+      <div style="display: flex; gap: 20px;">
+        <a href="#" style="color: #64748b; text-decoration: none;">Mentions légales</a>
+        <a href="#" style="color: #64748b; text-decoration: none;">Données personnelles</a>
+        <a href="#" style="color: #64748b; text-decoration: none;">Accessibilité : Conforme</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT DU SCROLL CHORÉGRAPHIÉ -->
+  <script>
+    const track = document.getElementById('scrollTrack');
+    const container = document.getElementById('stageContainer');
+    const fullImg = document.getElementById('fullImgLayer');
+    const subjectImg = document.getElementById('subjectImgLayer');
+    const heroIntro = document.getElementById('heroIntro');
+    const cards = document.getElementById('revealCards');
+
+    function onScrollScrollytelling() {
+      const rect = track.getBoundingClientRect();
+      const scrollableHeight = rect.height - window.innerHeight;
+      
+      let progress = -rect.top / scrollableHeight;
+      progress = Math.max(0, Math.min(1, progress));
+
+      // Zoom très subtil et continu
+      const scale = 0.88 + (progress * 0.08);
+      container.style.transform = `scale(${scale})`;
+
+      // 1. ÉTAPE D'ACCUEIL : Le titre et les chevaliers s'estompent doucement au début (0% à 18%)
+      const introFade = Math.max(0, 1 - (progress * 5.5));
+      heroIntro.style.opacity = introFade;
+      heroIntro.style.transform = `translate(-50%, calc(-50% - ${progress * 70}px))`;
+
+      // 2. ÉMERGENCE DU SUJET : L'abbaye apparaît seulement quand on commence à défiler (de 4% à 24%)
+      let subjectAlpha = 0;
+      if (progress > 0.04) {
+        subjectAlpha = (progress - 0.04) / 0.20;
+        subjectAlpha = Math.max(0, Math.min(1, subjectAlpha));
+      }
+      subjectImg.style.opacity = subjectAlpha;
+
+      // 3. RÉVÉLATION DU FOND COMPLET : Le ciel et l'environnement se déploient en douceur (de 22% à 65%)
+      let bgAlpha = 0;
+      if (progress > 0.22) {
+        bgAlpha = (progress - 0.22) / 0.43;
+        bgAlpha = Math.max(0, Math.min(1, bgAlpha));
+      }
+      fullImg.style.opacity = bgAlpha;
+
+      // 4. DURÉE PROLONGÉE DES ENCADRÉS NOIRS (Visibles de 25% à 74% de défilement)
+      if (progress >= 0.25 && progress <= 0.74) {
+        let cardAlpha = 0;
+        if (progress < 0.35) {
+          // Arrivée progressive
+          cardAlpha = (progress - 0.25) / 0.10;
+        } else if (progress <= 0.62) {
+          // Reste 100% visible et lisible pendant un long moment
+          cardAlpha = 1;
+        } else {
+          // Disparition douce avant la section blanche
+          cardAlpha = 1 - ((progress - 0.62) / 0.12);
+        }
+        cardAlpha = Math.max(0, Math.min(1, cardAlpha));
+        cards.style.opacity = cardAlpha;
+        cards.style.visibility = cardAlpha > 0 ? 'visible' : 'hidden';
+        cards.style.transform = `translateX(-50%) translateY(${20 - (cardAlpha * 20)}px)`;
+        cards.style.pointerEvents = cardAlpha > 0.5 ? 'auto' : 'none';
+      } else {
+        cards.style.opacity = 0;
+        cards.style.visibility = 'hidden';
+        cards.style.pointerEvents = 'none';
+      }
+    }
+
+    window.addEventListener('scroll', onScrollScrollytelling, { passive: true });
+    window.addEventListener('resize', onScrollScrollytelling);
+    onScrollScrollytelling();
+  </script>
+</body>
+</html>
