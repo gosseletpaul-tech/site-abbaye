@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Rapport de Performance - Abbaye-aux-Hommes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0b0e14;
+      color: #0f172a;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      padding: 30px 15px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .actions-bar {
+      width: 210mm;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .btn-pdf {
+      background: #b58d3d;
+      color: #ffffff;
+      border: none;
+      padding: 11px 24px;
+      font-weight: 700;
+      font-size: 0.82rem;
+      border-radius: 6px;
+      cursor: pointer;
+      letter-spacing: 0.04em;
+      transition: background 0.2s, transform 0.1s;
+    }
+    .btn-pdf:hover { background: #9c782f; }
+    .btn-pdf:active { transform: scale(0.98); }
+
+    /* CONTENEUR CALIBRÉ STRICTEMENT SUR 1 PAGE A4 SANS DÉBORDEMENT */
+    .sheet-a4 {
+      width: 210mm;
+      height: 295mm;
+      max-height: 295mm;
+      background: #ffffff;
+      padding: 14mm 16mm 12mm 16mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* EN-TÊTE ÉDITORIAL */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      border-bottom: 1px solid #e2e8f0;
+      padding-bottom: 12px;
+    }
+
+    .brand-title {
+      font-size: 1.35rem;
+      font-weight: 800;
+      color: #090d16;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 0.72rem;
+      font-weight: 700;
+      color: #b58d3d;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      margin-top: 3px;
+    }
+
+    .meta-col {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 3px;
+    }
+
+    .period-badge {
+      display: inline-block;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      color: #1e293b;
+      font-size: 0.7rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 4px;
+      margin-bottom: 2px;
+    }
+
+    .meta-row {
+      font-size: 0.72rem;
+      color: #64748b;
+      white-space: nowrap;
+    }
+
+    .domain-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    /* 4 CARTES KPIS */
+    .kpi-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .kpi-box {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+
+    .kpi-label {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #64748b;
+      margin-bottom: 3px;
+    }
+
+    .kpi-num {
+      font-size: 1.55rem;
+      font-weight: 800;
+      color: #090d16;
+      letter-spacing: -0.03em;
+      line-height: 1;
+    }
+
+    .kpi-num.gold { color: #b58d3d; }
+
+    .kpi-sub {
+      font-size: 0.66rem;
+      font-weight: 700;
+      color: #16a34a;
+      margin-top: 4px;
+    }
+
+    .kpi-sub.neutral {
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    /* SECTION 1 : LES DEUX GRAPHIQUES (Évolution + Jours clés) */
+    .charts-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .panel {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 12px;
+      background: #ffffff;
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 8px;
+    }
+
+    .panel-title {
+      font-size: 0.74rem;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
+    .panel-tag {
+      font-size: 0.64rem;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .chart-container {
+      height: 125px;
+      position: relative;
+    }
+
+    /* SECTION 2 : CANAUX + PROVENANCE GÉOGRAPHIQUE */
+    .insights-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 1fr;
+      gap: 14px;
+      margin-top: 10px;
+    }
+
+    .sources-list {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .source-item {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .source-meta {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.68rem;
+    }
+
+    .source-name {
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .source-val {
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #0f172a;
+    }
+
+    .bar-bg {
+      height: 5px;
+      background: #f1f5f9;
+      border-radius: 99px;
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      height: 100%;
+      border-radius: 99px;
+    }
+
+    /* BADGES GÉOGRAPHIQUES */
+    .geo-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .geo-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 7px 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .geo-region {
+      font-size: 0.68rem;
+      font-weight: 600;
+      color: #334155;
+    }
+
+    .geo-pct {
+      font-size: 0.72rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #b58d3d;
+    }
+
+    /* SECTION 3 : COMPORTEMENT & TECHNIQUE */
+    .tri-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-top: 10px;
+    }
+
+    .mini-panel {
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 9px 12px;
+      background: #fafafc;
+    }
+
+    .mini-title {
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: #475569;
+      margin-bottom: 5px;
+    }
+
+    .stat-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.69rem;
+      color: #334155;
+      margin-bottom: 3px;
+    }
+
+    .stat-row span:last-child {
+      font-weight: 700;
+      font-family: 'JetBrains Mono', monospace;
+      color: #0f172a;
+    }
+
+    /* NOTE STRATÉGIQUE */
+    .advisory-box {
+      margin-top: 10px;
+      border: 1px solid #e5d8b8;
+      background: #faf8f3;
+      border-radius: 8px;
+      padding: 10px 14px;
+    }
+
+    .advisory-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      color: #8c6823;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .advisory-text {
+      font-size: 0.73rem;
+      color: #334155;
+      line-height: 1.45;
+    }
+
+    /* PIED DE PAGE */
+    .footer {
+      border-top: 1px solid #e2e8f0;
+      padding-top: 8px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 0.65rem;
+      color: #94a3b8;
+      margin-top: auto;
+    }
+
+    @media print {
+      body { background: #fff; padding: 0; }
+      .actions-bar { display: none; }
+      .sheet-a4 { box-shadow: none; padding: 12mm 15mm 10mm 15mm; width: 100%; height: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="actions-bar">
+    <span style="color: #64748b; font-size: 0.78rem;">Document d'audit confidentiel · Diffusion interne</span>
+    <button class="btn-pdf" id="downloadBtn" onclick="telechargerPDFDirect()">📥 Exporter en PDF (Page Unique)</button>
+  </div>
+
+  <div id="captureArea" class="sheet-a4">
+    
+    <!-- EN-TÊTE -->
+    <div class="header">
+      <div>
+        <h1 class="brand-title">Abbaye-aux-Hommes de Caen</h1>
+        <div class="brand-subtitle">Synthèse Mensuelle de Performance Numérique</div>
+      </div>
+      <div class="meta-col">
+        <span class="period-badge">Octobre 2026</span>
+        <div class="meta-row"><strong>Site :</strong> <span class="domain-text">abbaye-saint-etienne-caen.netlify.app</span></div>
+        <div class="meta-row"><strong>Supervision :</strong> Paul Gosselet (Solutions Web)</div>
+      </div>
+    </div>
+
+    <!-- 4 KPIS MAJEURS -->
+    <div class="kpi-row">
+      <div class="kpi-box">
+        <div class="kpi-label">Visiteurs Uniques</div>
+        <div class="kpi-num">1 480</div>
+        <div class="kpi-sub">▲ +42% vs mois précédent</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Pages Vues</div>
+        <div class="kpi-num">4 620</div>
+        <div class="kpi-sub neutral">3,12 pages / session</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Demandes Privatisations</div>
+        <div class="kpi-num gold">14</div>
+        <div class="kpi-sub">▲ Taux conversion : 1,2%</div>
+      </div>
+      <div class="kpi-box">
+        <div class="kpi-label">Disponibilité Réseau</div>
+        <div class="kpi-num">100%</div>
+        <div class="kpi-sub neutral">0s d'interruption (Netlify CDN)</div>
+      </div>
+    </div>
+
+    <!-- LES DEUX GRAPHIQUES : ÉVOLUTION & JOURS D'AFFLUENCE -->
+    <div class="charts-grid">
+      
+      <!-- Graphique 1 : Tendance Hebdomadaire -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Tendance du Trafic Hebdomadaire</span>
+          <span class="panel-tag">Sessions uniques</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="trafficChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Graphique 2 : Activité par Jour (Le nouveau graphe pertinent) -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Activité par Jour de la Semaine</span>
+          <span class="panel-tag">Pic du week-end</span>
+        </div>
+        <div class="chart-container">
+          <canvas id="daysChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- CANAUX D'ACQUISITION & ORIGINE GÉOGRAPHIQUE -->
+    <div class="insights-grid">
+      
+      <!-- Canaux de trafic -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Canaux d'Acquisition</span>
+          <span class="panel-tag">Part du volume</span>
+        </div>
+        <div class="sources-list">
+          <div class="source-item">
+            <div class="source-meta">
+              <span class="source-name">Recherche Naturelle (Google SEO)</span>
+              <span class="source-val">44%</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width: 44%; background: #0f172a;"></div></div>
+          </div>
+          <div class="source-item">
+            <div class="source-meta">
+              <span class="source-name">Campagnes Sociales (Instagram & Meta Ads)</span>
+              <span class="source-val">28%</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width: 28%; background: #b58d3d;"></div></div>
+          </div>
+          <div class="source-item">
+            <div class="source-meta">
+              <span class="source-name">Accès Direct & Notoriété</span>
+              <span class="source-val">18%</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width: 18%; background: #64748b;"></div></div>
+          </div>
+          <div class="source-item">
+            <div class="source-meta">
+              <span class="source-name">Supports Physiques & QR Codes</span>
+              <span class="source-val">10%</span>
+            </div>
+            <div class="bar-bg"><div class="bar-fill" style="width: 10%; background: #cbd5e1;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Origine Géographique (Donnée clé pour les mariages/châteaux) -->
+      <div class="panel">
+        <div class="panel-header">
+          <span class="panel-title">Origine Géographique</span>
+          <span class="panel-tag">Bassin de clientèle</span>
+        </div>
+        <div class="geo-grid">
+          <div class="geo-card">
+            <span class="geo-region">Normandie (Calvados)</span>
+            <span class="geo-pct">42%</span>
+          </div>
+          <div class="geo-card">
+            <span class="geo-region">Île-de-France (Paris)</span>
+            <span class="geo-pct">33%</span>
+          </div>
+          <div class="geo-card">
+            <span class="geo-region">Hauts-de-France</span>
+            <span class="geo-pct">14%</span>
+          </div>
+          <div class="geo-card">
+            <span class="geo-region">Autres / Tourisme Int.</span>
+            <span class="geo-pct">11%</span>
+          </div>
+        </div>
+        <div style="font-size: 0.65rem; color: #64748b; margin-top: 9px; line-height: 1.35;">
+          *Un tiers des visites provient d'Île-de-France, confirmant l'attractivité du lieu pour les réceptions parisiennes au vert.
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ANALYSE COMPORTEMENTALE & AUDIT TECHNIQUE -->
+    <div class="tri-grid">
+      <div class="mini-panel">
+        <div class="mini-title">Supports Visiteurs</div>
+        <div class="stat-row"><span>Mobiles (iOS / Android)</span> <span>71%</span></div>
+        <div class="stat-row"><span>Ordinateurs de bureau</span> <span>24%</span></div>
+        <div class="stat-row"><span>Tablettes tactiles</span> <span>5%</span></div>
+      </div>
+
+      <div class="mini-panel">
+        <div class="mini-title">Sections Consultées</div>
+        <div class="stat-row"><span>1. Horaires & Visites</span> <span>48%</span></div>
+        <div class="stat-row"><span>2. Espaces Réceptifs</span> <span>32%</span></div>
+        <div class="stat-row"><span>3. Programmation 2026</span> <span>20%</span></div>
+      </div>
+
+      <div class="mini-panel">
+        <div class="mini-title">Indicateurs Techniques</div>
+        <div class="stat-row"><span>Temps de chargement</span> <span>0,42 s</span></div>
+        <div class="stat-row"><span>Score Google Vitals</span> <span>98 / 100</span></div>
+        <div class="stat-row"><span>Chiffrement SSL</span> <span>Sécurisé</span></div>
+      </div>
+    </div>
+
+    <!-- NOTE D'ANALYSE CONSULTANT -->
+    <div class="advisory-box">
+      <div class="advisory-title">
+        <span>●</span> Analyse Stratégique & Préconisations de Paul Gosselet
+      </div>
+      <p class="advisory-text">
+        <strong>Forte dynamique sur la privatisation des lieux :</strong> 32 % du trafic cible directement la section des réceptions. La corrélation entre les 33 % de visiteurs parisiens et le pic de formulaires le dimanche soir confirme l'intérêt de futurs mariés franciliens. L'immersion visuelle au défilement génère un temps d'attention moyen remarquable de 2 min 38 s.
+        <br>
+        <strong>Recommandation pour novembre :</strong> Ajouter un bandeau d'ouverture des réservations pour la saison 2027 dès l'en-tête pour capter les décisions avant les fêtes de fin d'année.
+      </p>
+    </div>
+
+    <!-- PIED DE PAGE -->
+    <div class="footer">
+      <span>Rapport édité le 31 octobre 2026 · Confidentialité garantie</span>
+      <span>Document d'Ingénierie Web · Page 1 / 1</span>
+    </div>
+
+  </div>
+
+  <script>
+    // Graphique 1 : Courbe de fréquentation
+    new Chart(document.getElementById('trafficChart'), {
+      type: 'line',
+      data: {
+        labels: ['Sem. 1', 'Sem. 2', 'Sem. 3', 'Sem. 4'],
+        datasets: [{
+          data: [280, 360, 410, 430],
+          borderColor: '#b58d3d',
+          borderWidth: 2,
+          pointBackgroundColor: '#b58d3d',
+          pointRadius: 3,
+          backgroundColor: 'rgba(181, 141, 61, 0.08)',
+          fill: true,
+          tension: 0.3
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 9, family: 'Plus Jakarta Sans' }, color: '#94a3b8' } },
+          y: { grid: { color: '#f1f5f9' }, ticks: { font: { size: 9, family: 'JetBrains Mono' }, color: '#94a3b8', stepSize: 100 } }
+        }
+      }
+    });
+
+    // Graphique 2 : Activité par Jour (Bar Chart montrant le pic du week-end)
+    new Chart(document.getElementById('daysChart'), {
+      type: 'bar',
+      data: {
+        labels: ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'],
+        datasets: [{
+          data: [130, 145, 160, 175, 240, 310, 320],
+          backgroundColor: [
+            '#e2e8f0', '#e2e8f0', '#e2e8f0', '#e2e8f0',
+            '#cbd5e1', '#b58d3d', '#0f172a'
+          ],
+          borderRadius: 4
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { font: { size: 9, family: 'Plus Jakarta Sans' }, color: '#94a3b8' } },
+          y: { display: false }
+        }
+      }
+    });
+
+    // Fonction de capture PDF calibrée strictement sur 1 seule page
+    function telechargerPDFDirect() {
+      const btn = document.getElementById('downloadBtn');
+      btn.innerText = '⏳ Génération...';
+
+      const element = document.getElementById('captureArea');
+      const opt = {
+        margin:       0,
+        filename:     'Rapport_Performance_Abbaye_Octobre_2026.pdf',
+        image:        { type: 'jpeg', quality: 0.99 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
+        jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak:    { mode: 'avoid-all' }
+      };
+
+      html2pdf().set(opt).from(element).save().then(() => {
+        btn.innerText = '📥 Exporter en PDF (Page Unique)';
+      });
+    }
+  </script>
+</body>
+</html>
